@@ -8,18 +8,6 @@ import (
 	"github.com/croepha/go-logging-extras/logctx"
 )
 
-var recurse slog.Handler
-
-func init() {
-	recurse = slog.Default().Handler()
-}
-
-// This sets the handler that is used by the NewHandler handler in the case where recursion is detected
-// mutates global state without a lock, please serialize
-func SetRecurseHandler(h slog.Handler) {
-	recurse = h
-}
-
 // Create a new handler instance
 // This handler simply uses the supplied ctx to check for a Handler and uses it
 // This handler can be used directly or installed as slog.Default()
@@ -34,13 +22,11 @@ type ctxHandler struct {
 	groups []string
 }
 
+
+func (ctxHandler) CannotBeLogCtxHandler() {}
+
 func handler(ctx context.Context) slog.Handler {
-	real := logctx.Handler(ctx)
-	if _, ok := real.(*ctxHandler); ok {
-		real = recurse
-		slog.New(real).ErrorContext(ctx, "recursive use of handler abaited")
-	}
-	return real
+	return logctx.Handler(ctx)
 }
 
 func (h *ctxHandler) Enabled(ctx context.Context, l slog.Level) bool {

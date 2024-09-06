@@ -27,7 +27,7 @@ func Test(t *testing.T) {
 	handler := th.H
 	logger := slog.New(handler)
 
-	errordump.SetGlobalDetailer(
+	errordump.GlobalDetailer =
 		errordump.NewUnwrappingDetailer(
 			errordump.ReflectionDetailer(
 				errordump.ChainDetailers(
@@ -35,8 +35,7 @@ func Test(t *testing.T) {
 					errordump.RawDetailer,
 				),
 			),
-		),
-	)
+		)
 
 	e := fmt.Errorf("wrap test: %w %w %w",
 		status.Errorf(codes.Aborted, "asdf"),

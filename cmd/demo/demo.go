@@ -74,5 +74,4 @@ func doTask(ctx context.Context) {
 func doSomeOperationThatFails() error {
 	_, err := os.Stat("/file/that/does/not/exist")
 	return err
-
 }

@@ -24,6 +24,10 @@ type L struct {
 	wrapDepth int
 }
 
+// TODO: as an alternative to single source, kinda would be
+// nice to have a method to add full stack... probably
+// should be done as a valuer
+
 // Increments the wrap depth, which causes more frames to be skipped when resolving the source lines (only works when directly logging)
 func (l L) Wrap() L {
 	l.wrapDepth++

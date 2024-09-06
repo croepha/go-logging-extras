@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/croepha/go-logging-extras/internal"
 	"github.com/croepha/go-logging-extras/logwrap"
 )
 
@@ -15,6 +16,11 @@ A Slog handler can be added to and retrieved from the givent context
 Debug/Info/Warn/Error are provided as convenience functions that use
 Handler from ctx
 
+You must ensure that either:
+  - all ctxs used for logging have a Handler set
+  - DefaultHandler is set
+otherwise, logs will be silently dropped, or painic if PancOnNullHandler is set
+
 */
 
 // NOTE: Intentially not using a custom type to avoid collisions
@@ -24,18 +30,34 @@ Handler from ctx
 // different modules, and still be compatible with eachother
 var contextKey = "slog.Handler-7263656f68700a61"
 
+var DefaultHandler slog.Handler
+
+var PanicOnNullHandler bool
+
 // Gets Handler from context (or use the default if one isn't set)
 func Handler(ctx context.Context) slog.Handler {
 	v, _ := ctx.Value(contextKey).(slog.Handler)
 	if v == nil {
-		v = slog.Default().Handler()
+		v = DefaultHandler
+		if v == nil {
+			if PanicOnNullHandler {
+				panic("No handler in context and not DefaultHandler set")
+			}
+			v = &internal.NullHandler{}
+		}
 	}
 	return v
 }
 
 // Creates a new context with the given handler added to it
 func Context(ctx context.Context, handler slog.Handler) context.Context {
-	//lint:ignore SA1029 see contextKey comment
+
+	// Prevent recursive use
+	if _, ok := handler.(interface{ CannotBeLogCtxHandler() }); ok {
+		panic("CannotBeLogCtxHandler handler used at logCtx handler")
+	}
+
+	//lint:ignore SA1029 collisions are a feature see contextKey comment
 	return context.WithValue(ctx, contextKey, handler)
 }
 

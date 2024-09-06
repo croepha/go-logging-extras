@@ -3,7 +3,6 @@ package errordump
 import (
 	"log/slog"
 	"reflect"
-	"sync"
 
 	"gitlab.com/croepha/common-utils/lostandfound"
 )
@@ -99,34 +98,14 @@ type reflectionDetails struct {
 	NextDetails          Details
 }
 
-func NewDefaultDetailer() Detailer {
-	return NewUnwrappingDetailer(ReflectionDetailer(RawDetailer))
-}
-
-var globalDetailer = NewDefaultDetailer()
-var mut = sync.Mutex{}
-
-func SetGlobalDetailer(d Detailer) {
-	if d == nil {
-		panic("SetGlobalDetailer(nil) ?")
-	}
-	mut.Lock()
-	defer mut.Unlock()
-	globalDetailer = d
-}
-
-func LoadGobalDetailer() Detailer {
-	mut.Lock()
-	defer mut.Unlock()
-	return globalDetailer
-}
+var GlobalDetailer = NewUnwrappingDetailer(ReflectionDetailer(RawDetailer))
 
 type slogValue struct {
 	err error
 }
 
 func (v *slogValue) LogValue() slog.Value {
-	return slog.AnyValue(LoadGobalDetailer()(v.err))
+	return slog.AnyValue(GlobalDetailer(v.err))
 }
 
 func NewSlog(name string, err error) slog.Attr {

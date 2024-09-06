@@ -24,8 +24,13 @@ func Init(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
+	if os.Getenv("DEVELOPMENT_MODE") == "1" {
+		logctx.PanicOnNullHandler = true
+	}
+
+	logctx.DefaultHandler = handler
+
 	// Setup the ctx compatibility handler
-	ctxhandler.SetRecurseHandler(handler)
 	slog.SetDefault(slog.New(ctxhandler.NewHandler()))
 
 	ctx = logctx.Context(ctx, handler)
@@ -56,6 +61,8 @@ func EnvHandler() (slog.Handler, error) {
 		}
 	}
 
+	text := true
+
 	var out io.Writer
 	switch e := os.Getenv("SLOG_OUTPUT"); strings.ToLower(e) {
 	// TODO syslog? or URLS and other protocols? Could have pluggable protocol handlers
@@ -72,16 +79,17 @@ func EnvHandler() (slog.Handler, error) {
 		if err != nil {
 			return nil, fmt.Errorf("SLOG_OUTPUT: %+q err: %w", e, err)
 		}
+		text = false
 		out = f
 	}
 
-	text := false
-	if out, ok := out.(*os.File); ok && term.IsTerminal(int(out.Fd())) {
-		text = true
+	if out, ok := out.(*os.File); ok && !term.IsTerminal(int(out.Fd())) {
+		text = false
 	}
 
 	opts := slog.HandlerOptions{
-		Level: &level,
+		Level:     &level,
+		AddSource: true,
 	}
 
 	if text {

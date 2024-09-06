@@ -18,6 +18,8 @@ used to get the source location information so that the filename and line number
 
 */
 
+// TODO: Would be nice to be able to also skip frames based on package? see src/net/http/server.go:relevantCaller
+
 // Returns the program counter of the calling goroutine
 // depth will skip a given number of stack frames
 // in the case of func F() any { return PC(0) } will return a location inside of F

@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/croepha/go-logging-extras/internal"
 	"github.com/croepha/go-logging-extras/lgsg"
 	"github.com/croepha/go-logging-extras/logctx"
 	"github.com/croepha/go-logging-extras/logtest"
@@ -35,27 +36,8 @@ func TestSugar(t *testing.T) {
 
 }
 
-func (h *NullHandler) Enabled(_ context.Context, _ slog.Level) bool {
-	return true
-}
-
-func (h *NullHandler) Handle(_ context.Context, _ slog.Record) error {
-	return nil
-}
-
-func (h *NullHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return h
-}
-
-func (h *NullHandler) WithGroup(name string) slog.Handler {
-	return h
-}
-
-type NullHandler struct {
-}
-
 func BenchmarkSugar(b *testing.B) {
-	handler := &NullHandler{}
+	handler := &internal.NullHandler{}
 	ctx := context.Background()
 	ctx = logctx.Context(ctx, handler)
 	l := lgsg.L{}
@@ -65,7 +47,7 @@ func BenchmarkSugar(b *testing.B) {
 }
 
 func BenchmarkBaselineLogger(b *testing.B) {
-	handler := &NullHandler{}
+	handler := &internal.NullHandler{}
 
 	ctx := logctx.Context(context.Background(), handler)
 
@@ -76,7 +58,7 @@ func BenchmarkBaselineLogger(b *testing.B) {
 }
 
 func BenchmarkBaselineAttrs(b *testing.B) {
-	handler := &NullHandler{}
+	handler := &internal.NullHandler{}
 
 	ctx := logctx.Context(context.Background(), handler)
 
