@@ -164,7 +164,7 @@ func (sgh common) A(name string, value any) common {
 // Adds an error attribute to be deeply described
 func (sgh common) errMaybe(err error) common {
 	if err != nil {
-		sgh.Attr(errordump.NewSlog("error", err))
+		return sgh.Attr(errordump.NewSlog("error", err))
 	}
 	return sgh
 }
@@ -293,4 +293,18 @@ func (sgh Bound) Error(err error, msg string) {
 // handles a new Error log record, if err is not nil, adds it as an error
 func (sgh Sugar) Error(ctx context.Context, err error, msg string) {
 	sgh.errMaybe(err).LogFromWrapper(ctx, 1, slog.LevelError, msg)
+}
+
+// logs and panics if err is not nil
+func (sgh Bound) MustNotError(err error) {
+	if err != nil {
+		sgh.errMaybe(err).LogFromWrapper(1, slog.LevelError, "panicing due to unexpected error")
+	}
+}
+
+// logs and panics if err is not nil
+func (sgh Sugar) MustNotError(ctx context.Context, err error) {
+	if err != nil {
+		sgh.errMaybe(err).LogFromWrapper(ctx, 1, slog.LevelError, "panicing due to unexpected error")
+	}
 }
