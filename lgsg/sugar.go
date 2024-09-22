@@ -299,6 +299,7 @@ func (sgh Sugar) Error(ctx context.Context, err error, msg string) {
 func (sgh Bound) MustNotError(err error) {
 	if err != nil {
 		sgh.errMaybe(err).LogFromWrapper(1, slog.LevelError, "panicing due to unexpected error")
+		panic(err)
 	}
 }
 
@@ -306,5 +307,6 @@ func (sgh Bound) MustNotError(err error) {
 func (sgh Sugar) MustNotError(ctx context.Context, err error) {
 	if err != nil {
 		sgh.errMaybe(err).LogFromWrapper(ctx, 1, slog.LevelError, "panicing due to unexpected error")
+		panic(err)
 	}
 }
